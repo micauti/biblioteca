@@ -4,36 +4,178 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Google Sheets Data</title>
+    <title>Library Book List</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        header,
+        footer {
+            width: 100%;
+            background-color: #333;
+            color: white;
+            text-align: center;
+            padding: 10px;
+        }
+
+        .container {
+            width: 80%;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .book-card {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            text-align: left;
+            transition: transform 0.3s;
+        }
+
+        .book-card:hover {
+            transform: translateY(-10px);
+        }
+
+        .book-card img {
+            width: 100%;
+            height: auto;
+            border-radius: 8px;
+        }
+
+        .book-card h3 {
+            margin: 10px 0;
+            font-size: 1.2rem;
+            color: #333;
+        }
+
+        .book-card p {
+            font-size: 0.9rem;
+            color: #555;
+            line-height: 1.6;
+        }
+
+        .book-card .author {
+            font-style: italic;
+            color: #777;
+        }
+
+        .search-container {
+            width: 80%;
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .search-container input {
+            width: 80%;
+            padding: 10px;
+            font-size: 1rem;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+
+        h1 {
+            color: #444;
+        }
+
+        footer p {
+            font-size: 0.9rem;
+        }
+    </style>
 </head>
 
 <body>
-    <h1>Data from Google Sheets</h1>
-    <div id="sheet-data"></div>
+    <header>
+        <h1>Library Book List</h1>
+    </header>
+
+    <div class="search-container">
+        <input type="text" id="search" placeholder="Search by title, author or description" oninput="filterBooks()">
+    </div>
+
+    <div id="book-list" class="container"></div>
+
+    <footer>
+        <p>Library System &copy; 2024</p>
+    </footer>
 
     <script>
-        const sheetId = '1Z4hJqgivgSA6k4AldI7_0eeGrH0LAAdFwExkUzUjN8E';
-        const apiKey = 'AIzaSyDpSeQcR5c05SEiOweZobnIYQuJjpuHWEg';
-        const range = 'Foaie1!A1:C10'; // Modifică intervalul după nevoie
+        const sheetId = '1Z4hJqgivgSA6k4AldI7_0eeGrH0LAAdFwExkUzUjN8E'; // ID-ul foii de calcul
+        const apiKey = 'AIzaSyDpSeQcR5c05SEiOweZobnIYQuJjpuHWEg'; // Cheia API
+        const range = 'lista!A2:D'; // Intervalul în care se află datele cărților
+        let books = [];
 
         async function fetchData() {
             const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${range}?key=${apiKey}`;
             try {
                 const response = await fetch(url);
                 const data = await response.json();
-                displayData(data.values);
+                books = data.values;
+                displayBooks(books);
             } catch (error) {
                 console.error('Error:', error);
             }
         }
 
-        function displayData(values) {
-            const container = document.getElementById('sheet-data');
-            values.forEach(row => {
-                const rowData = document.createElement('p');
-                rowData.textContent = row.join(' | ');
-                container.appendChild(rowData);
+        function displayBooks(books) {
+            const container = document.getElementById('book-list');
+            container.innerHTML = ''; // Curăță lista existentă
+            books.forEach(book => {
+                const bookCard = document.createElement('div');
+                bookCard.classList.add('book-card');
+
+                // Crează elementul imagine
+                const image = document.createElement('img');
+                image.src = book[0]; // presupunem că prima coloană este pentru imagine
+                image.alt = `Cover of ${book[1]}`;
+
+                // Crează titlul cărții
+                const title = document.createElement('h3');
+                title.textContent = book[1]; // presupunem că a doua coloană este pentru titlu
+
+                // Crează autorul cărții
+                const author = document.createElement('p');
+                author.classList.add('author');
+                author.textContent = `Author: ${book[2]}`; // presupunem că a treia coloană este pentru autor
+
+                // Crează descrierea cărții
+                const description = document.createElement('p');
+                description.textContent = book[3]; // presupunem că a patra coloană este pentru descriere
+
+                // Adaugă elementele în card
+                bookCard.appendChild(image);
+                bookCard.appendChild(title);
+                bookCard.appendChild(author);
+                bookCard.appendChild(description);
+
+                // Adaugă cardul în containerul principal
+                container.appendChild(bookCard);
             });
+        }
+
+        function filterBooks() {
+            const query = document.getElementById('search').value.toLowerCase();
+            const filteredBooks = books.filter(book => {
+                const title = book[1].toLowerCase();
+                const author = book[2].toLowerCase();
+                const description = book[3].toLowerCase();
+                return title.includes(query) || author.includes(query) || description.includes(query);
+            });
+            displayBooks(filteredBooks);
         }
 
         fetchData();

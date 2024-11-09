@@ -3,10 +3,6 @@ body {
     background-color: #f4f4f9;
     margin: 0;
     padding: 0;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
     min-height: 100vh;
     max-width: 100%;
     overflow-x: hidden;
@@ -19,6 +15,14 @@ footer {
     color: white;
     text-align: center;
     padding: 10px;
+}
+
+.main {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    min-height: 80vh;    
 }
 
 .container {

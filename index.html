@@ -5,123 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cartile biblioteci Micauti</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f9;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            max-width: 100%;
-            overflow-x: hidden;
-        }
-
-        header,
-        footer {
-            width: 100%;
-            background-color: #333;
-            color: white;
-            text-align: center;
-            padding: 10px;
-        }
-
-        .container {
-            width: 80%;
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-            padding: 20px;
-            margin-top: 20px;
-        }
-
-        .book-card {
-            background-color: white;
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            padding: 20px;
-            text-align: left;
-            transition: transform 0.3s;
-            max-width: 300px;
-        }
-
-        .book-card:hover {
-            transform: translateY(-10px);
-        }
-
-        .book-card img {
-            width: 100%;
-            height: auto;
-            border-radius: 8px;
-            object-fit: cover;
-            background-color: white;
-        }
-
-        .book-card .image-container {
-            position: relative;
-        }
-
-        .book-card .year-label {
-            position: absolute;
-            bottom: 10px;
-            right: 10px;
-            background-color: rgba(0, 0, 0, 0.7);
-            color: white;
-            font-weight: 550;
-            padding: 5px;
-            border-radius: 3px;
-            font-size: 0.9rem;
-        }
-
-        .book-card h3 {
-            margin: 10px 0;
-            font-size: 1.2rem;
-            color: #333;
-        }
-
-        .book-card p {
-            font-size: 0.9rem;
-            color: #555;
-            line-height: 1.6;
-        }
-
-        .book-card .author {
-            font-style: italic;
-            color: #777;
-        }
-
-        .search-container {
-            width: 80%;
-            margin-top: 20px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .search-container input {
-            width: 80%;
-            padding: 10px;
-            font-size: 1rem;
-            border-radius: 5px;
-            border: 1px solid #ddd;
-        }
-
-        h1 {
-            color: #444;
-        }
-
-        footer p {
-            font-size: 0.9rem;
-        }
-
-        .filter-dropdown {
-            padding: 10px;
-            margin-top: 20px;
-        }
-    </style>
+    <link rel="stylesheet" href="https://micauti.github.io/biblioteca/css/style.css">
 </head>
 
 <body>
@@ -138,11 +22,7 @@
         <label for="genre-filter">Selectează un gen:</label>
         <select id="genre-filter" onchange="filterBooks()">
             <option value="">Toate genurile</option>
-            <option value="Fiction">Fiction</option>
-            <option value="Non-Fiction">Non-Fiction</option>
-            <option value="Fantasy">Fantasy</option>
-            <option value="Biography">Biography</option>
-            <!-- Adaugă genuri după necesitate -->
+            <!-- Opțiunile vor fi generate din spreadsheet -->
         </select>
     </div>
 
@@ -157,6 +37,7 @@
         const apiKey = 'AIzaSyDpSeQcR5c05SEiOweZobnIYQuJjpuHWEg';
         const range = 'lista!A2:G';
         let books = [];
+        let genres = new Set(); // Set pentru a evita duplicarea genurilor
 
         async function fetchData() {
             const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${range}?key=${apiKey}`;
@@ -164,10 +45,29 @@
                 const response = await fetch(url);
                 const data = await response.json();
                 books = data.values;
+                extractGenres(books);
                 displayBooks(books);
             } catch (error) {
                 console.error('Error:', error);
             }
+        }
+
+        function extractGenres(books) {
+            books.forEach(book => {
+                if (book[5]) {
+                    const bookGenres = book[5].split(','); // Genuri separate prin virgulă
+                    bookGenres.forEach(genre => genres.add(genre.trim()));
+                }
+            });
+
+            // Adaugă opțiunile de genuri în dropdown
+            const genreFilter = document.getElementById('genre-filter');
+            genres.forEach(genre => {
+                const option = document.createElement('option');
+                option.value = genre;
+                option.textContent = genre;
+                genreFilter.appendChild(option);
+            });
         }
 
         function displayBooks(books) {
@@ -180,45 +80,37 @@
                 const imageContainer = document.createElement('div');
                 imageContainer.classList.add('image-container');
 
-                // Verifică dacă există o imagine, altfel setează fundal alb
                 const image = document.createElement('img');
                 if (book[0]) {
-                    image.src = book[0]; // presupunem că prima coloană este pentru imagine
+                    image.src = book[0];
                     image.alt = `Cover of ${book[1]}`;
                 } else {
-                    image.src = 'https://micauti.github.io/biblioteca/image/missingbook.webp'; // Dacă nu există imagine, se folosește un fundal alb
+                    image.src = 'https://micauti.github.io/biblioteca/image/missingbook.webp';
                 }
 
-                // Labelul cu anul cărții
                 const yearLabel = document.createElement('div');
                 yearLabel.classList.add('year-label');
-                yearLabel.textContent = `${book[4]}`; // Anul se află în coloana E
+                yearLabel.textContent = `${book[4]}`;
 
                 imageContainer.appendChild(image);
                 imageContainer.appendChild(yearLabel);
 
-                // Crează titlul cărții
                 const title = document.createElement('h3');
-                title.textContent = book[1]; // presupunem că a doua coloană este pentru titlu
+                title.textContent = book[1];
 
-                // Crează autorul cărții
                 const author = document.createElement('p');
                 author.classList.add('author');
-                author.textContent = `Author: ${book[2]}`; // presupunem că a treia coloană este pentru autor
+                author.textContent = `Author: ${book[2]}`;
 
-                // Crează descrierea cărții
                 const description = document.createElement('p');
-                description.textContent = book[3]; // presupunem că a patra coloană este pentru descriere
+                description.textContent = book[3];
 
-                // Genul cărții
                 const genre = document.createElement('p');
-                genre.textContent = `Gen: ${book[5]}`; // Genul se află în coloana F
+                genre.textContent = `Gen: ${book[5]}`;
 
-                // Statusul cărții
                 const status = document.createElement('p');
-                status.textContent = `Status: ${book[6]}`; // Statusul se află în coloana G
+                status.textContent = `Status: ${book[6]}`;
 
-                // Adaugă elementele în card
                 bookCard.appendChild(imageContainer);
                 bookCard.appendChild(title);
                 bookCard.appendChild(author);
@@ -226,7 +118,6 @@
                 bookCard.appendChild(genre);
                 bookCard.appendChild(status);
 
-                // Adaugă cardul în containerul principal
                 container.appendChild(bookCard);
             });
         }

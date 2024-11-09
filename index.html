@@ -56,6 +56,24 @@
             width: 100%;
             height: auto;
             border-radius: 8px;
+            object-fit: cover;
+            background-color: white;
+        }
+
+        .book-card .image-container {
+            position: relative;
+        }
+
+        .book-card .year-label {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            font-weight: 550;
+            padding: 5px;
+            border-radius: 3px;
+            font-size: 0.9rem;
         }
 
         .book-card h3 {
@@ -98,6 +116,11 @@
         footer p {
             font-size: 0.9rem;
         }
+
+        .filter-dropdown {
+            padding: 10px;
+            margin-top: 20px;
+        }
     </style>
 </head>
 
@@ -107,7 +130,20 @@
     </header>
 
     <div class="search-container">
-        <input type="text" id="search" placeholder="Search by title, author or description" oninput="filterBooks()">
+        <input type="text" id="search" placeholder="Căutare" oninput="filterBooks()">
+    </div>
+
+    <!-- Dropdown pentru a selecta genul -->
+    <div class="filter-dropdown">
+        <label for="genre-filter">Selectează un gen:</label>
+        <select id="genre-filter" onchange="filterBooks()">
+            <option value="">Toate genurile</option>
+            <option value="Fiction">Fiction</option>
+            <option value="Non-Fiction">Non-Fiction</option>
+            <option value="Fantasy">Fantasy</option>
+            <option value="Biography">Biography</option>
+            <!-- Adaugă genuri după necesitate -->
+        </select>
     </div>
 
     <div id="book-list" class="container"></div>
@@ -119,7 +155,7 @@
     <script>
         const sheetId = '1Z4hJqgivgSA6k4AldI7_0eeGrH0LAAdFwExkUzUjN8E'; // ID-ul foii de calcul
         const apiKey = 'AIzaSyDpSeQcR5c05SEiOweZobnIYQuJjpuHWEg'; // Cheia API
-        const range = 'lista!A2:D'; // Intervalul în care se află datele cărților
+        const range = 'lista!A2:G'; // Intervalul în care se află datele cărților
         let books = [];
 
         async function fetchData() {
@@ -141,10 +177,26 @@
                 const bookCard = document.createElement('div');
                 bookCard.classList.add('book-card');
 
-                // Crează elementul imagine
+                const imageContainer = document.createElement('div');
+                imageContainer.classList.add('image-container');
+
+                // Verifică dacă există o imagine, altfel setează fundal alb
                 const image = document.createElement('img');
-                image.src = book[0]; // presupunem că prima coloană este pentru imagine
-                image.alt = `Cover of ${book[1]}`;
+                if (book[0]) {
+                    image.src = book[0]; // presupunem că prima coloană este pentru imagine
+                    image.alt = `Cover of ${book[1]}`;
+                } else {
+                    image.src = ''; // Dacă nu există imagine, se folosește un fundal alb
+                    image.style.backgroundColor = 'white';
+                }
+
+                // Labelul cu anul cărții
+                const yearLabel = document.createElement('div');
+                yearLabel.classList.add('year-label');
+                yearLabel.textContent = `${book[4]}`; // Anul se află în coloana E
+
+                imageContainer.appendChild(image);
+                imageContainer.appendChild(yearLabel);
 
                 // Crează titlul cărții
                 const title = document.createElement('h3');
@@ -159,11 +211,21 @@
                 const description = document.createElement('p');
                 description.textContent = book[3]; // presupunem că a patra coloană este pentru descriere
 
+                // Genul cărții
+                const genre = document.createElement('p');
+                genre.textContent = `Gen: ${book[5]}`; // Genul se află în coloana F
+
+                // Statusul cărții
+                const status = document.createElement('p');
+                status.textContent = `Status: ${book[6]}`; // Statusul se află în coloana G
+
                 // Adaugă elementele în card
-                bookCard.appendChild(image);
+                bookCard.appendChild(imageContainer);
                 bookCard.appendChild(title);
                 bookCard.appendChild(author);
                 bookCard.appendChild(description);
+                bookCard.appendChild(genre);
+                bookCard.appendChild(status);
 
                 // Adaugă cardul în containerul principal
                 container.appendChild(bookCard);
@@ -172,11 +234,18 @@
 
         function filterBooks() {
             const query = document.getElementById('search').value.toLowerCase();
+            const genreFilter = document.getElementById('genre-filter').value.toLowerCase();
+
             const filteredBooks = books.filter(book => {
                 const title = book[1].toLowerCase();
                 const author = book[2].toLowerCase();
                 const description = book[3].toLowerCase();
-                return title.includes(query) || author.includes(query) || description.includes(query);
+                const genre = book[5].toLowerCase();
+
+                const matchesSearch = title.includes(query) || author.includes(query) || description.includes(query);
+                const matchesGenre = genreFilter ? genre.includes(genreFilter) : true;
+
+                return matchesSearch && matchesGenre;
             });
             displayBooks(filteredBooks);
         }

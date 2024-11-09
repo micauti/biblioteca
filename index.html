@@ -14,16 +14,18 @@
         <h1>Cartile biblioteci Micauti</h1>
     </header>
 
-    <div class="search-container">
-        <input type="text" id="search" placeholder="Căutare" oninput="filterBooks()">
-        <div class="filter-dropdown">
-            <select id="genre-filter" onchange="filterBooks()">
-                <option value="">Toate genurile</option>
-            </select>
+    <div class="main">
+       <div class="search-container">
+            <input type="text" id="search" placeholder="Căutare" oninput="filterBooks()">
+            <div class="filter-dropdown">
+                <select id="genre-filter" onchange="filterBooks()">
+                    <option value="">Toate genurile</option>
+                </select>
+            </div>
         </div>
+    
+        <div id="book-list" class="container"></div>
     </div>
-
-    <div id="book-list" class="container"></div>
 
     <footer>
         <p>Brigunet Andrei &copy; 2024</p>

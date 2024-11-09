@@ -15,15 +15,11 @@
 
     <div class="search-container">
         <input type="text" id="search" placeholder="Căutare" oninput="filterBooks()">
-    </div>
-
-    <!-- Dropdown pentru a selecta genul -->
-    <div class="filter-dropdown">
-        <label for="genre-filter">Selectează un gen:</label>
-        <select id="genre-filter" onchange="filterBooks()">
-            <option value="">Toate genurile</option>
-            <!-- Opțiunile vor fi generate din spreadsheet -->
-        </select>
+        <div class="filter-dropdown">
+            <select id="genre-filter" onchange="filterBooks()">
+                <option value="">Toate genurile</option>
+            </select>
+        </div>
     </div>
 
     <div id="book-list" class="container"></div>

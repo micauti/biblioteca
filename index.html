@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Google Sheets Data</title>
+</head>
+
+<body>
+    <h1>Data from Google Sheets</h1>
+    <div id="sheet-data"></div>
+
+    <script>
+        const sheetId = '1Z4hJqgivgSA6k4AldI7_0eeGrH0LAAdFwExkUzUjN8E';
+        const apiKey = 'AIzaSyDpSeQcR5c05SEiOweZobnIYQuJjpuHWEg';
+        const range = 'Foaie1!A1:C10'; // Modifică intervalul după nevoie
+
+        async function fetchData() {
+            const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${range}?key=${apiKey}`;
+            try {
+                const response = await fetch(url);
+                const data = await response.json();
+                displayData(data.values);
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        function displayData(values) {
+            const container = document.getElementById('sheet-data');
+            values.forEach(row => {
+                const rowData = document.createElement('p');
+                rowData.textContent = row.join(' | ');
+                container.appendChild(rowData);
+            });
+        }
+
+        fetchData();
+    </script>
+</body>
+
+</html>
